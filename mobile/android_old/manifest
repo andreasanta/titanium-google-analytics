@@ -15,4 +15,4 @@ name: googleAnalytics
 moduleid: analytics.google
 guid: 2dce4125-1f59-40f1-aeb9-3ed250b36dd9
 platform: android
-minsdk: 3.0.2.GA
+minsdk: 3.4.0.GA

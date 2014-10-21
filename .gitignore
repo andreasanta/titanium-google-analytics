@@ -3,7 +3,6 @@ bin
 build
 libs
 dist
-*.zip
 
 xcuserdata
 build.properties

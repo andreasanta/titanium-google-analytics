@@ -1,8 +1,7 @@
 ## Google Analytics - Titanium Appcelerator Module
 
-NOTE: This module is no longer actively being developed. You are welcome to use/update the code but there is the possibility that it will not work any more.
+This module uses Google Analytics SDK for iOS and Android V3.
 
-Implements the Google analytics SDK for both iPhone and Android platforms. See documentation and example for details on how to use the module.
+Besides, it's been updated to Titanium SDK 3.4.0.GA.
 
-This module is in the Appcelerator marketplace.
-https://marketplace.appcelerator.com/apps/5081
+It's not being currently maintained, but it works ;)

@@ -8,6 +8,8 @@
 #import "AnalyticsGoogleTransactionProxy.h"
 #import "TiBase.h"
 
+#import <GAIDictionaryBuilder.h>
+
 @implementation AnalyticsGoogleTransactionProxy
 
 -(void)dealloc
@@ -29,12 +31,15 @@
     ENSURE_ARG_OR_NIL_FOR_KEY(tax, args, @"tax", NSNumber);
     ENSURE_ARG_OR_NIL_FOR_KEY(shipping, args, @"shipping", NSNumber);
     ENSURE_ARG_OR_NIL_FOR_KEY(revenue, args, @"revenue", NSNumber);
-
-    _transaction = [[GAITransaction transactionWithId:transactionId
-                                    withAffiliation:affiliation] retain];
-    _transaction.taxMicros = [self toMicros:[tax doubleValue]];
-    _transaction.shippingMicros = [self toMicros:[shipping doubleValue]];
-    _transaction.revenueMicros = [self toMicros:[revenue doubleValue]];
+    
+    _transactionID = transactionId;
+    _items = [NSMutableArray array];
+    _transaction = [[GAIDictionaryBuilder createTransactionWithId:transactionId             // (NSString) Transaction ID
+                                                     affiliation:affiliation         // (NSString) Affiliation
+                                                         revenue:[self toMicros:[revenue doubleValue]]                  // (NSNumber) Order revenue (including tax and shipping)
+                                                             tax:[self toMicros:[tax doubleValue]]                 // (NSNumber) Tax
+                                                        shipping:[self toMicros:[shipping doubleValue]]                    // (NSNumber) Shipping
+                                                    currencyCode:@"EUR"] build];        // (NSString) Currency code
 }
 
 -(id)initWithArgs:(NSDictionary*)args
@@ -71,17 +76,25 @@
     ENSURE_ARG_FOR_KEY(price, args, @"price", NSNumber);
     ENSURE_ARG_FOR_KEY(quantity, args, @"quantity", NSNumber);
 
-    GAITransactionItem *item = [GAITransactionItem itemWithCode:productCode
-                                                           name:productName
-                                                       category:productCategory
-                                                    priceMicros:[self toMicros:[price doubleValue]]
-                                                       quantity:[quantity integerValue]];
-    [_transaction addItem:item];
+    NSMutableDictionary *i = [[GAIDictionaryBuilder createItemWithTransactionId:_transactionID        // (NSString) Transaction ID
+                                                                name:productName  // (NSString) Product Name
+                                                                 sku:productCode            // (NSString) Product SKU
+                                                            category:productCategory  // (NSString) Product category
+                                                               price:[self toMicros:[price doubleValue]]              // (NSNumber)  Product price
+                                                            quantity:quantity                  // (NSInteger)  Product quantity
+                                                        currencyCode:@"EUR"] build];    // (NSString) Currency code
+    
+    [_items addObject:i];
 }
 
--(GAITransaction*)transaction
+-(NSMutableDictionary*)transaction
 {
     return _transaction;
+}
+
+-(NSMutableArray*)items
+{
+    return _items;
 }
 
 @end

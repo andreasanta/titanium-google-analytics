@@ -8,23 +8,12 @@
 #import "AnalyticsGoogleTrackerProxy.h"
 #import "AnalyticsGoogleTransactionProxy.h"
 
+#import <GAIDictionaryBuilder.h>
+#import <GAIFields.h>
+
 
 @implementation AnalyticsGoogleTrackerProxy
 
--(id)initWithDefault
-{
-    if (self = [super init])
-    {
-        if (![NSThread isMainThread])
-        {
-            TiThreadPerformOnMainThread(^{
-                tracker = [[GAI sharedInstance] defaultTracker];
-                trackingId = [tracker trackingId];
-            }, NO);
-        }
-    }
-    return self;
-}
 
 -(id)initWithTrackingId:(NSString*)value
 {
@@ -64,11 +53,13 @@
     ENSURE_ARG_OR_NIL_FOR_KEY(action, args, @"action", NSString);
     ENSURE_ARG_OR_NIL_FOR_KEY(label, args, @"label", NSString);
     ENSURE_ARG_OR_NIL_FOR_KEY(value, args, @"value", NSNumber);
+    
 
-    [tracker sendEventWithCategory:category
-                         withAction:action
-                          withLabel:label
-                          withValue:value];
+
+    [tracker send:[[GAIDictionaryBuilder createEventWithCategory:category
+                                                          action:action
+                                                           label:label
+                                                           value:value] build]];
 }
 
 -(void)trackSocial:(id)args
@@ -84,9 +75,9 @@
     ENSURE_ARG_FOR_KEY(action, args, @"action", NSString);
     ENSURE_ARG_OR_NIL_FOR_KEY(target, args, @"target", NSString);
 
-    [tracker sendSocial:network
-              withAction:action
-              withTarget:target];
+    [tracker send:[[GAIDictionaryBuilder createSocialWithNetwork:network          // Social network (required)
+                                                          action:action            // Social action (required)
+                                                          target:target] build]];  // Social target
 }
 
 -(void)trackTiming:(id)args
@@ -104,18 +95,22 @@
     ENSURE_ARG_OR_NIL_FOR_KEY(label, args, @"label", NSString);
     ENSURE_ARG_FOR_KEY(time, args, @"time", NSNumber);
 
-    [tracker sendTimingWithCategory:category
-                           withValue:[time doubleValue]
-                            withName:name
-                           withLabel:label];
+    [tracker send:[[GAIDictionaryBuilder createTimingWithCategory:category    // Timing category (required)
+                                                        interval:time        // Timing interval (required)
+                                                            name:name  // Timing name
+                                                           label:label] build]];    // Timing label
 }
 
 -(void)trackScreen:(id)value
 {
     ENSURE_UI_THREAD_1_ARG(value);
     ENSURE_SINGLE_ARG(value, NSString);
+    
+    [tracker set:kGAIScreenName
+             value:value];
+    
 
-    [tracker sendView:value];
+    [tracker send:[[GAIDictionaryBuilder createScreenView] build]];
 }
 
 -(void)trackTransaction:(id)value
@@ -124,56 +119,17 @@
     ENSURE_SINGLE_ARG(value, AnalyticsGoogleTransactionProxy);
 
     AnalyticsGoogleTransactionProxy *proxy = (AnalyticsGoogleTransactionProxy*)value;
-    [tracker sendTransaction: [proxy transaction]];
+    [tracker send:[proxy transaction]];
+    
+    for (NSMutableDictionary *i in [proxy items]) {
+            [tracker send:i];
+    }
 }
 
--(void)send:(id)args
-{
-    ENSURE_UI_THREAD_1_ARG(args);
-    ENSURE_SINGLE_ARG(args, NSDictionary);
-
-    NSString *trackType;
-    NSDictionary *parameters;
-
-    ENSURE_ARG_FOR_KEY(trackType, args, @"trackType", NSString);
-    ENSURE_ARG_FOR_KEY(parameters, args, @"parameters", NSDictionary);
-
-    [tracker send:trackType params:parameters];
-}
-
--(void)close
-{
-    ENSURE_UI_THREAD_0_ARGS;
-    [tracker close];
-}
 
 -(id)trackingId
 {
     return trackingId;
-}
-
--(void)setAnonymize:(id)value
-{
-    ENSURE_UI_THREAD_1_ARG(value);
-    ENSURE_SINGLE_ARG(value, NSNumber);
-
-    tracker.anonymize = [value boolValue];
-}
-
--(void)setUseHttps:(id)value
-{
-    ENSURE_UI_THREAD_1_ARG(value);
-    ENSURE_SINGLE_ARG(value, NSNumber);
-
-    tracker.useHttps = [value boolValue];
-}
-
--(void)setSampleRate:(id)value
-{
-    ENSURE_UI_THREAD_1_ARG(value);
-    ENSURE_SINGLE_ARG(value, NSNumber);
-
-    tracker.sampleRate = [value doubleValue];
 }
 
 -(id<GAITracker>)tracker

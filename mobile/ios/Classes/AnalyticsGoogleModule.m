@@ -7,6 +7,7 @@
 #import "AnalyticsGoogleModule.h"
 #import "AnalyticsGoogleTransactionProxy.h"
 #import "AnalyticsGoogleTrackerProxy.h"
+
 #import "TiBase.h"
 #import "TiHost.h"
 #import "TiUtils.h"
@@ -33,15 +34,11 @@
 {
 	[super startup];
 
-    // Dispatch any stored tracking events
-    if (![NSThread isMainThread])
-    {
-        TiThreadPerformOnMainThread(^{
+    ENSURE_UI_THREAD_0_ARGS;
+    
             optOut = [[GAI sharedInstance] optOut];
-            debug = [[GAI sharedInstance] debug];
+            [[GAI sharedInstance].logger setLogLevel:kGAILogLevelVerbose];
             dispatchInterval = [[GAI sharedInstance] dispatchInterval];
-        }, NO);
-    }
 }
 
 -(void)shutdown:(id)sender
@@ -101,11 +98,6 @@
     [GAI sharedInstance].optOut = optOut = [TiUtils boolValue:value];
 }
 
--(id)defaultTracker
-{
-    return [[AnalyticsGoogleTrackerProxy alloc] initWithDefault];
-}
-
 -(id)debug
 {
     return [NSNumber numberWithBool:debug];
@@ -115,7 +107,10 @@
 {
     ENSURE_UI_THREAD_1_ARG(value);
     ENSURE_TYPE(value, NSNumber);
-    [GAI sharedInstance].debug = debug = [TiUtils boolValue:value];
+    if ([TiUtils boolValue:value])
+        [[GAI sharedInstance].logger setLogLevel:kGAILogLevelVerbose];
+    else
+        [[GAI sharedInstance].logger setLogLevel:kGAILogLevelWarning];
 }
 
 -(id)dispatchInterval

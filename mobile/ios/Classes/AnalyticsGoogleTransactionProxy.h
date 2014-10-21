@@ -9,10 +9,13 @@
 #import "GAI.h"
 
 @interface AnalyticsGoogleTransactionProxy : TiProxy{
-	GAITransaction *_transaction;
+    NSString *_transactionID;
+	NSMutableDictionary *_transaction;
+    NSMutableArray *_items;
 }
 
--(GAITransaction*)transaction;
+-(NSMutableDictionary*)transaction;
+-(NSMutableArray*)items;
 -(id)initWithArgs:(NSDictionary*)args;
 
 @end

@@ -15,7 +15,6 @@
 
 @property (nonatomic,readonly) id<GAITracker> tracker;
 
--(id)initWithDefault;
 -(id)initWithTrackingId:(id)trackingId;
 
 @end

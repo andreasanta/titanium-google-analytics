@@ -5,14 +5,14 @@
 version: 1.0
 apiversion: 2
 description: Google Analytics for Titanium Appcelerator
-author: Matt Tuttle
+author: Andrea Santambrogio
 license: MIT
-copyright: Copyright (c) 2012 by Matt Tuttle
+copyright: Copyright (c) 2014 Andrea Santambrogio
 
 
 # these should not be edited
 name: google-analytics
 moduleid: analytics.google
-guid: 2dce4125-1f59-40f1-aeb9-3ed250b36dd9
+guid: 2dce4125-1f59-40f1-asb9-3ed250b36dd9
 platform: iphone
-minsdk: 3.0.2.GA
+minsdk: 3.4.0.GA

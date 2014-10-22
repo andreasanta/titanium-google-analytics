@@ -96,43 +96,11 @@ public class TrackerProxy extends KrollProxy
 	}
 
 	@Kroll.method
-	public void trackScreen(HashMap props)
-	{
-		KrollDict propsDict = new KrollDict(props);
-		String path = TiConvert.toString(propsDict, "path");
-		
-		tracker.setScreenName(path);
+	public void trackScreen(String screenName)
+	{		
+		tracker.setScreenName(screenName);
 		
 		HitBuilders.AppViewBuilder hitBuilder = new HitBuilders.AppViewBuilder();
-		
-		// custom dimension
-		Object cd = propsDict.get("customDimension");
-		if (cd instanceof HashMap) {
-			HashMap dict = (HashMap) cd;
-			for (Object key : dict.keySet()) {
-				int idx = TiConvert.toInt(key);
-				String val = TiConvert.toString(dict.get(key));
-			
-				if (idx > 0) {
-					hitBuilder.setCustomDimension(idx, val);
-				}
-			}
-		}
-				
-		// custom metric
-		Object cm = propsDict.get("customMetric");
-		if (cm instanceof HashMap) {
-			HashMap dict = (HashMap) cm;
-		
-			for (Object key : dict.keySet()) {
-				int idx = TiConvert.toInt(key);
-				float val = TiConvert.toFloat(dict.get(key));
-			
-				if (idx > 0) {
-					hitBuilder.setCustomMetric(idx, val);
-				}
-			}
-		}
 		
 		tracker.send(hitBuilder.build());
 	}
